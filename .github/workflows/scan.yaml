@@ -1,4 +1,4 @@
-name: build percona mongodb operator
+name: scan image with trivy
 on: 
  workflow_dispatch: 
    inputs:
@@ -10,7 +10,7 @@ jobs:
   script:
     runs-on:
       - ubuntu-latest
-    name: clone and create deb
+    name: pull image 
     steps:
       - name: export, build and push
         env: 
