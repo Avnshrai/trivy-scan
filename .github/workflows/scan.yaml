@@ -6,6 +6,14 @@ on:
         description: 'Image name with tag which needs to be scanned'
         required: true
         default: ''
+      docker_username:
+        description: 'In case image is private provide username, in case of public leave it blank'
+        required: false
+        default: ''
+      docker_password:
+        description: 'In case image is private provide password, in case of public leave it blank'
+        required: false
+        default: ''
 jobs:
   script:
     runs-on:
@@ -16,6 +24,9 @@ jobs:
         env: 
            docker_pass: ${{secrets.docker_pass}}
         run: |
+           if [ -n "${{ github.event.inputs.docker_username }}" ] && [ -n "${{ github.event.inputs.docker_password }}" ]; then
+            docker login -u '${{ github.event.inputs.docker_username }}' -p '${{ github.event.inputs.docker_password }}'
+           fi
            docker pull ${{ github.event.inputs.image_name }}
 
       - name: ☢ Image Scan
