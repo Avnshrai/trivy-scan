@@ -1,0 +1,39 @@
+name: build percona mongodb operator
+on: 
+ workflow_dispatch: 
+   inputs:
+      image_name:
+        description: 'Image name with tag which needs to be scanned'
+        required: true
+        default: ''
+jobs:
+  script:
+    runs-on:
+      - ubuntu-latest
+    name: clone and create deb
+    steps:
+      - name: export, build and push
+        env: 
+           docker_pass: ${{secrets.docker_pass}}
+        run: |
+           docker pull ${{ github.event.inputs.image_name }}
+
+      - name: ☢ Image Scan
+        uses: aquasecurity/trivy-action@master
+        id: scan
+        with:
+          image-ref: '${{ github.event.inputs.image_name }}'
+          format: 'template'
+          template: "@/contrib/html.tpl"
+          output: 'trivy-image-results.html'
+          exit-code: '0'
+          ignore-unfixed: false
+          vuln-type: 'os,library'
+          severity: 'CRITICAL,HIGH,MEDIUM,LOW'
+      
+      - name: ⬆ Upload Trivy Image scan results
+        uses: actions/upload-artifact@v3.1.2
+        with:
+          name: Trivy Scan HTML Report
+          path: trivy-image-results.html
+           
